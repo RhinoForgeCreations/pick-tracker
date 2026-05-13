@@ -23,19 +23,19 @@ class _KeypadState extends State<Keypad> {
   DateTime _lastSubmit = DateTime.fromMillisecondsSinceEpoch(0);
 
   void _appendDigit(String d) {
-    HapticFeedback.selectionClick();
     final next = (widget.value == '0' ? '' : widget.value) + d;
     final asInt = int.tryParse(next) ?? 0;
     if (asInt > widget.hardCap) {
       HapticFeedback.heavyImpact();
       return;
     }
+    HapticFeedback.selectionClick();
     widget.onChange(next);
   }
 
   void _backspace() {
-    HapticFeedback.selectionClick();
     if (widget.value.isEmpty) return;
+    HapticFeedback.selectionClick();
     widget.onChange(widget.value.substring(0, widget.value.length - 1));
   }
 
