@@ -36,5 +36,6 @@ class SettingsRepository {
     db.update('settings', {'current_input_buffer': s}, where: 'id = 1');
 
   Future<void> setLastExportAt(DateTime at) async =>
-    db.update('settings', {'last_export_at': at.toIso8601String()}, where: 'id = 1');
+    db.update('settings', {'last_export_at': at.toUtc().toIso8601String()},
+      where: 'id = 1');
 }
