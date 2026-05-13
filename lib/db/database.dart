@@ -7,24 +7,32 @@ class AppDatabase {
   const AppDatabase._();
 
   static Database? _instance;
+  static Future<Database>? _opening;
 
   static Future<Database> open() async {
     if (_instance != null) return _instance!;
+    _opening ??= _doOpen();
+    _instance = await _opening!;
+    return _instance!;
+  }
+
+  static Future<Database> _doOpen() async {
     final dir = await getApplicationDocumentsDirectory();
     final path = p.join(dir.path, 'pick_tracker.db');
-    _instance = await openDatabase(
+    return openDatabase(
       path,
       version: Migrations.latestVersion,
+      onConfigure: Migrations.onConfigure,
       onCreate: Migrations.onCreate,
       onUpgrade: Migrations.onUpgrade,
     );
-    return _instance!;
   }
 
   static Future<Database> openForTest() async {
     return openDatabase(
       inMemoryDatabasePath,
       version: Migrations.latestVersion,
+      onConfigure: Migrations.onConfigure,
       onCreate: Migrations.onCreate,
       onUpgrade: Migrations.onUpgrade,
     );
@@ -33,5 +41,6 @@ class AppDatabase {
   static Future<void> close() async {
     await _instance?.close();
     _instance = null;
+    _opening = null;
   }
 }
