@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
+  const AppColors._();
+
   static const Color accent = Color(0xFFFFB300);
   static const Color accentLight = Color(0xFFFFCB4D);
   static const Color surfaceTop = Color(0xFF0E1620);

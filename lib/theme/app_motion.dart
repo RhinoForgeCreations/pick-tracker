@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class AppMotion {
+  const AppMotion._();
+
   static const Duration short = Duration(milliseconds: 200);
   static const Duration medium = Duration(milliseconds: 300);
   static const Duration reveal = Duration(milliseconds: 600);

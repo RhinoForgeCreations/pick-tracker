@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
 class AppTypography {
+  const AppTypography._();
+
   static const List<FontFeature> tabular = [FontFeature.tabularFigures()];
 
   static const TextStyle hero = TextStyle(
