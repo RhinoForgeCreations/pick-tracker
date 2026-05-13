@@ -36,6 +36,8 @@ class _ActiveOrderCardState extends State<ActiveOrderCard>
         child: Text('No active order — tap a number to start',
           style: AppTypography.body.copyWith(color: AppColors.textSecondary)));
     }
+    assert(widget.cases != null && widget.startedAt != null,
+      'ActiveOrderCard: active=true requires cases and startedAt');
     return Container(padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.cardBg, borderRadius: BorderRadius.circular(12),
