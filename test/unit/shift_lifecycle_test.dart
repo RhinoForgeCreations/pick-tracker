@@ -44,4 +44,34 @@ void main() {
     expect(n, 1);
     expect(await ShiftRepository(db).getActive(), isNull);
   });
+
+  test('undoLastOrder reopens prior order without marking edited', () async {
+    final db = await AppDatabase.openForTest();
+    final svc = make(db);
+    final orderRepo = OrderRepository(db);
+    final t0 = DateTime.utc(2026, 5, 13, 19, 0);
+    await svc.submitNext(cases: 42, at: t0);
+    await svc.submitNext(cases: 50, at: t0.add(const Duration(minutes: 18)));
+    // Both orders now exist; order 2 is active, order 1 is closed.
+    await svc.undoLastOrder();
+    // Order 2 should be gone, order 1 should be active again.
+    final shift = await ShiftRepository(db).getActive();
+    final remaining = await orderRepo.findByShift(shift!.id!);
+    expect(remaining, hasLength(1));
+    expect(remaining.first.cases, 42);
+    expect(remaining.first.endedAt, isNull);
+    expect(remaining.first.durationMs, isNull);
+    expect(remaining.first.edited, isFalse,
+      reason: 'system-driven reopen must not mark edited=1');
+  });
+
+  test('undoLastOrder collapses single-order shift with auto_recovery', () async {
+    final db = await AppDatabase.openForTest();
+    final svc = make(db);
+    final t0 = DateTime.utc(2026, 5, 13, 19, 0);
+    await svc.submitNext(cases: 42, at: t0);
+    await svc.undoLastOrder();
+    expect(await ShiftRepository(db).getActive(), isNull,
+      reason: 'shift should be closed with auto_recovery reason');
+  });
 }

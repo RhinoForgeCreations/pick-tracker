@@ -45,6 +45,14 @@ class OrderRepository {
       where: 'id = ?', whereArgs: [o.id]);
   }
 
+  /// System-driven reopen — clears `ended_at`, `duration_ms`, `is_outlier`.
+  /// Does NOT touch `edited` (preserves any prior user-edit marker).
+  Future<void> reopen(int id) async {
+    await db.update('orders',
+      {'ended_at': null, 'duration_ms': null, 'is_outlier': 0},
+      where: 'id = ?', whereArgs: [id]);
+  }
+
   Future<void> delete(int id) async {
     await db.delete('orders', where: 'id = ?', whereArgs: [id]);
   }

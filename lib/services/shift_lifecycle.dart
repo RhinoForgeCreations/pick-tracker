@@ -80,7 +80,7 @@ class ShiftLifecycle {
     if (shift == null) return 0;
     final active = await orders.getActiveForShift(shift.id!);
     final lastActivity = active?.startedAt ?? shift.startedAt;
-    if (now.difference(lastActivity).inMinutes > gapMinutes) {
+    if (now.difference(lastActivity).inSeconds > gapMinutes * 60) {
       await endShift(at: lastActivity, reason: 'auto_inactivity');
       return 1;
     }
@@ -95,12 +95,9 @@ class ShiftLifecycle {
     final last = all.last;
     await orders.delete(last.id!);
     if (all.length >= 2) {
+      // System-driven reopen — does NOT mark the prior order as edited.
       final prev = all[all.length - 2];
-      final reopened = Order(
-        id: prev.id, shiftId: prev.shiftId, seq: prev.seq, cases: prev.cases,
-        startedAt: prev.startedAt, endedAt: null, durationMs: null,
-        isOutlier: false, edited: prev.edited);
-      await orders.update(reopened);
+      await orders.reopen(prev.id!);
     } else {
       await shifts.close(shift.id!, shift.startedAt, 'auto_recovery');
     }
