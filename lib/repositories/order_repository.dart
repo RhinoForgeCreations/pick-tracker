@@ -35,6 +35,11 @@ class OrderRepository {
     }, where: 'id = ?', whereArgs: [id]);
   }
 
+  /// User-edit path only — always marks `edited=1`. Caller MUST provide a
+  /// freshly-fetched `Order` (system fields like `ended_at`, `duration_ms`,
+  /// `is_outlier` are written from the map and will overwrite the DB).
+  /// System-driven changes (auto-close, outlier recompute) go through
+  /// dedicated repository methods, not `update`.
   Future<void> update(Order o) async {
     await db.update('orders', o.toMap()..['edited'] = 1,
       where: 'id = ?', whereArgs: [o.id]);
