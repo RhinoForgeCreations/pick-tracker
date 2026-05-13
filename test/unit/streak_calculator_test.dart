@@ -38,4 +38,40 @@ void main() {
       1,
     );
   });
+
+  test('empty totals returns 0 immediately', () {
+    expect(
+      StreakCalculator.compute(
+        endingOn: '2026-05-13',
+        dailyTotals: const {},
+        dailyTargets: const {},
+        nonWorkDates: const {},
+      ),
+      0,
+    );
+  });
+
+  test('maxLookbackDays cap prevents infinite loop on all-nonwork dataset', () {
+    // Empty data + every date non-work → would loop forever without the cap.
+    final nonWork = <String>{};
+    final cur = DateTime.utc(2026, 5, 13);
+    for (var i = 0; i < 500; i++) {
+      final d = cur.subtract(Duration(days: i));
+      nonWork.add(
+        '${d.year.toString().padLeft(4, '0')}-'
+        '${d.month.toString().padLeft(2, '0')}-'
+        '${d.day.toString().padLeft(2, '0')}');
+    }
+    final stopwatch = Stopwatch()..start();
+    final streak = StreakCalculator.compute(
+      endingOn: '2026-05-13',
+      dailyTotals: const {},
+      dailyTargets: const {},
+      nonWorkDates: nonWork,
+    );
+    stopwatch.stop();
+    expect(streak, 0);
+    expect(stopwatch.elapsedMilliseconds, lessThan(100),
+      reason: 'cap must terminate quickly');
+  });
 }
