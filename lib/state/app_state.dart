@@ -17,6 +17,7 @@ class AppState extends ChangeNotifier {
   late ShiftRepository _shifts;
   late OrderRepository _orders;
   late SettingsRepository _settingsRepo;
+  late NonWorkDayRepository _nonWork;
   late ShiftLifecycle _lifecycle;
   bool _injected = false;
 
@@ -30,7 +31,7 @@ class AppState extends ChangeNotifier {
 
   ShiftRepository get shiftsRepo => _shifts;
   OrderRepository get ordersRepo => _orders;
-  NonWorkDayRepository get nonWorkRepo => NonWorkDayRepository(_db);
+  NonWorkDayRepository get nonWorkRepo => _nonWork;
   Database get rawDb => _db;
 
   Future<void> init() async {
@@ -38,13 +39,15 @@ class AppState extends ChangeNotifier {
     _shifts = ShiftRepository(_db);
     _orders = OrderRepository(_db);
     _settingsRepo = SettingsRepository(_db);
+    _nonWork = NonWorkDayRepository(_db);
     _lifecycle = ShiftLifecycle(
       shifts: _shifts, orders: _orders, settings: _settingsRepo);
-    settings = await _settingsRepo.get();
     await _refresh();
   }
 
   Future<void> _refresh() async {
+    // Always reload settings so currentInputBuffer (cleared by lifecycle) stays in sync.
+    settings = await _settingsRepo.get();
     activeShift = await _shifts.getActive();
     activeOrder = activeShift == null
       ? null
@@ -60,6 +63,12 @@ class AppState extends ChangeNotifier {
     }
     todayTotal = total;
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    if (!_injected) _db.close();
+    super.dispose();
   }
 
   int? get activeOrderCases => activeOrder?.cases;
