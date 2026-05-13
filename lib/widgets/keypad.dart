@@ -90,8 +90,8 @@ class _KBtn extends StatelessWidget {
   Widget build(BuildContext context) {
     final bg = filled ? AppColors.accent : AppColors.cardBg;
     final fg = filled ? Colors.black : AppColors.textPrimary;
-    return Expanded(child: SizedBox(
-      height: 72,
+    return Expanded(child: AspectRatio(
+      aspectRatio: 1.6,
       child: Padding(padding: const EdgeInsets.all(4),
         child: Material(color: bg, borderRadius: BorderRadius.circular(14),
           child: InkWell(

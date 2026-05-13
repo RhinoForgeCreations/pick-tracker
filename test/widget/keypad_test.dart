@@ -4,6 +4,14 @@ import 'package:pick_tracker/widgets/keypad.dart';
 
 void main() {
   testWidgets('digits accumulate, NEXT submits as int', (t) async {
+    // S25 Ultra-ish portrait viewport so the AspectRatio(1.6) keypad fits.
+    t.view.physicalSize = const Size(1080, 2400);
+    t.view.devicePixelRatio = 3.0;
+    addTearDown(() {
+      t.view.resetPhysicalSize();
+      t.view.resetDevicePixelRatio();
+    });
+
     String value = '';
     int submitted = -1;
     await t.pumpWidget(MaterialApp(home: Scaffold(body: StatefulBuilder(
