@@ -1,5 +1,6 @@
 class Shift {
   final int? id;
+  // Always UTC. Callers must pass DateTime.utc(...) or DateTime.now().toUtc().
   final DateTime startedAt;
   final DateTime? endedAt;
   final String? endedReason;

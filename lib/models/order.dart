@@ -3,6 +3,7 @@ class Order {
   final int shiftId;
   final int seq;
   final int cases;
+  // Always UTC. Callers must pass DateTime.utc(...) or DateTime.now().toUtc().
   final DateTime startedAt;
   final DateTime? endedAt;
   final int? durationMs;
