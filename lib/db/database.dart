@@ -35,6 +35,7 @@ class AppDatabase {
       onConfigure: Migrations.onConfigure,
       onCreate: Migrations.onCreate,
       onUpgrade: Migrations.onUpgrade,
+      singleInstance: false,
     );
   }
 
