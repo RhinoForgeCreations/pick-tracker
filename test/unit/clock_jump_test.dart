@@ -14,4 +14,16 @@ void main() {
     final r = ClockGuard.safeDuration(wallClockMs: 50000, monotonicMs: 10000);
     expect(r.durationMs, 0); expect(r.suspect, isTrue);
   });
+
+  test('boundary: diff exactly 5000ms is NOT suspect (strict >)', () {
+    final r = ClockGuard.safeDuration(wallClockMs: 15000, monotonicMs: 10000);
+    expect(r.durationMs, 15000);
+    expect(r.suspect, isFalse);
+  });
+
+  test('boundary: diff of 5001ms IS suspect', () {
+    final r = ClockGuard.safeDuration(wallClockMs: 15001, monotonicMs: 10000);
+    expect(r.durationMs, 0);
+    expect(r.suspect, isTrue);
+  });
 }
