@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/exporter.dart';
 import '../state/app_state.dart';
+import 'non_work_days_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   final AppState state;
@@ -121,6 +122,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             final f = await ex.exportCsv();
             await ex.shareFile(f);
           }),
+        ListTile(
+          title: const Text('Non-work days'),
+          trailing: const Icon(Icons.event_busy),
+          onTap: () => Navigator.push(context, MaterialPageRoute(
+            builder: (_) => NonWorkDaysScreen(repo: widget.state.nonWorkRepo)))),
       ]));
   }
 }
