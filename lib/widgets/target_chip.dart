@@ -7,17 +7,19 @@ class TargetChip extends StatelessWidget {
   final VoidCallback onTap;
   const TargetChip({super.key, required this.target, required this.onTap});
   @override
-  Widget build(BuildContext context) => InkWell(
-    onTap: onTap, borderRadius: BorderRadius.circular(24),
-    child: Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: AppColors.cardBg, borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.accent.withOpacity(0.4))),
-      child: Row(mainAxisSize: MainAxisSize.min, children: [
-        const Text('🎯 ', style: TextStyle(fontSize: 14)),
-        Text('$target', style: AppTypography.statValue.copyWith(
-          color: AppColors.accent)),
-      ])),
-  );
+  Widget build(BuildContext context) => Semantics(
+    label: "Today's target $target. Tap to change.",
+    button: true,
+    child: InkWell(
+      onTap: onTap, borderRadius: BorderRadius.circular(24),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: AppColors.cardBg, borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: AppColors.accent.withOpacity(0.4))),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          const Text('🎯 ', style: TextStyle(fontSize: 14)),
+          Text('$target', style: AppTypography.statValue.copyWith(
+            color: AppColors.accent)),
+        ]))));
 }
