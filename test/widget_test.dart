@@ -1,17 +1,12 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:pick_tracker/app.dart';
 
 void main() {
-  testWidgets('App smoke test', (WidgetTester tester) async {
-    await tester.pumpWidget(const PickTrackerApp());
-    expect(find.text('pick_tracker'), findsOneWidget);
+  testWidgets('App boots into loading state before DB init completes', (t) async {
+    await t.pumpWidget(const PickTrackerApp());
+    // First frame: AppState.init() is in flight, the splash CircularProgressIndicator
+    // is the only widget rendered before the home screen takes over.
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
   });
 }
