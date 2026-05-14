@@ -150,11 +150,12 @@ class AppState extends ChangeNotifier {
   }
 
   Future<void> wipeAllData() async {
-    await _db.delete('orders');
-    await _db.delete('shifts');
-    await _db.delete('non_work_days');
-    await _db.delete('settings');
-    await _db.insert('settings', {'id': 1});
+    final db = _db!;
+    await db.delete('orders');
+    await db.delete('shifts');
+    await db.delete('non_work_days');
+    await db.delete('settings');
+    await db.insert('settings', {'id': 1});
     settings = await _settingsRepo.get();
     await _refresh();
   }
