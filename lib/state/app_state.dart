@@ -13,7 +13,7 @@ import '../services/calculations.dart';
 import '../services/shift_lifecycle.dart';
 
 class AppState extends ChangeNotifier {
-  late Database _db;
+  Database? _db;
   late ShiftRepository _shifts;
   late OrderRepository _orders;
   late SettingsRepository _settingsRepo;
@@ -32,14 +32,14 @@ class AppState extends ChangeNotifier {
   ShiftRepository get shiftsRepo => _shifts;
   OrderRepository get ordersRepo => _orders;
   NonWorkDayRepository get nonWorkRepo => _nonWork;
-  Database get rawDb => _db;
+  Database get rawDb => _db!;
 
   Future<void> init() async {
     if (!_injected) _db = await AppDatabase.open();
-    _shifts = ShiftRepository(_db);
-    _orders = OrderRepository(_db);
-    _settingsRepo = SettingsRepository(_db);
-    _nonWork = NonWorkDayRepository(_db);
+    _shifts = ShiftRepository(_db!);
+    _orders = OrderRepository(_db!);
+    _settingsRepo = SettingsRepository(_db!);
+    _nonWork = NonWorkDayRepository(_db!);
     _lifecycle = ShiftLifecycle(
       shifts: _shifts, orders: _orders, settings: _settingsRepo);
     await _refresh();
@@ -67,7 +67,7 @@ class AppState extends ChangeNotifier {
 
   @override
   void dispose() {
-    if (!_injected) _db.close();
+    if (!_injected) _db?.close();
     super.dispose();
   }
 
