@@ -72,9 +72,14 @@ class _PickTrackerAppState extends State<PickTrackerApp> {
           surface: AppColors.cardBg,
           error: AppColors.danger),
         textTheme: base.textTheme.copyWith(bodyMedium: AppTypography.body)),
-      home: _ready
-          ? HomeScreen(state: _state)
-          : const Scaffold(body: Center(child: CircularProgressIndicator())),
+      home: _initError != null
+          ? Scaffold(body: Center(child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Text('Init failed: $_initError',
+                style: const TextStyle(color: AppColors.danger)))))
+          : _ready
+              ? HomeScreen(state: _state)
+              : const Scaffold(body: Center(child: CircularProgressIndicator())),
     );
   }
 }
