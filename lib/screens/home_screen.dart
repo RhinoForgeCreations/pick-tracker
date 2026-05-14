@@ -190,6 +190,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               elevation: 0,
               leading: IconButton(
                 icon: const Icon(Icons.more_vert),
+                tooltip: 'Menu',
                 onPressed: _openOverflow),
               actions: [
                 Padding(
