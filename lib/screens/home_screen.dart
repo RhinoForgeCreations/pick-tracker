@@ -8,6 +8,7 @@ import '../widgets/keypad.dart';
 import '../widgets/stats_strip.dart';
 import '../widgets/target_chip.dart';
 import 'end_shift_summary.dart';
+import 'history_hub_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final AppState state;
@@ -124,7 +125,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         await widget.state.undoLastOrder();
         if (mounted) setState(() {});
         break;
-      // 'history' and 'settings' wired in Tasks 26, 27.
+      case 'history':
+        await Navigator.push(context, MaterialPageRoute(
+          builder: (_) => HistoryHubScreen(state: widget.state)));
+        break;
+      // 'settings' wired in Task 27.
     }
   }
 
