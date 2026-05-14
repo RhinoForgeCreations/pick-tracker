@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 import '../state/app_state.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
@@ -169,6 +170,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     return AnimatedBuilder(
       animation: state,
       builder: (_, __) {
+        final keep = state.settings!.keepScreenOn && state.activeShift != null;
+        WakelockPlus.toggle(enable: keep);
         final shiftStart = state.activeShift?.startedAt.toLocal();
         final shiftElapsed = shiftStart == null
             ? Duration.zero
