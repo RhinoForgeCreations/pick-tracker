@@ -9,6 +9,7 @@ import '../widgets/stats_strip.dart';
 import '../widgets/target_chip.dart';
 import 'end_shift_summary.dart';
 import 'history_hub_screen.dart';
+import 'settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final AppState state;
@@ -129,7 +130,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         await Navigator.push(context, MaterialPageRoute(
           builder: (_) => HistoryHubScreen(state: widget.state)));
         break;
-      // 'settings' wired in Task 27.
+      case 'settings':
+        await Navigator.push(context, MaterialPageRoute(
+          builder: (_) => SettingsScreen(state: widget.state)));
+        if (mounted) setState(() {});
+        break;
     }
   }
 
