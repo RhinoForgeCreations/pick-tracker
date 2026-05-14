@@ -73,13 +73,16 @@ class EndShiftSummary extends StatelessWidget {
               child: const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                 child: Text('Done'))),
-          ]))));
+          ])))));
   }
 
   Widget _row(String label, String value) => Padding(
     padding: const EdgeInsets.only(bottom: 8),
     child: Row(children: [
-      Expanded(child: Text(label, style: AppTypography.statLabel)),
-      Text(value, style: AppTypography.statValue),
+      Expanded(flex: 2, child: Text(label, style: AppTypography.statLabel)),
+      Flexible(flex: 3, child: Text(value,
+        style: AppTypography.statValue,
+        textAlign: TextAlign.end,
+        overflow: TextOverflow.ellipsis)),
     ]));
 }
