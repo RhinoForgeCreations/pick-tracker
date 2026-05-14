@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/exporter.dart';
 import '../state/app_state.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -102,6 +103,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
             if (hard == null) return;
             await widget.state.setCaps(soft, hard);
             if (mounted) setState(() {});
+          }),
+        const Divider(),
+        ListTile(
+          title: const Text('Export JSON'),
+          trailing: const Icon(Icons.upload_file),
+          onTap: () async {
+            final ex = Exporter(widget.state.rawDb);
+            final f = await ex.exportJson();
+            await ex.shareFile(f);
+          }),
+        ListTile(
+          title: const Text('Export CSV'),
+          trailing: const Icon(Icons.table_chart),
+          onTap: () async {
+            final ex = Exporter(widget.state.rawDb);
+            final f = await ex.exportCsv();
+            await ex.shareFile(f);
           }),
       ]));
   }
