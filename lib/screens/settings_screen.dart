@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/exporter.dart';
 import '../state/app_state.dart';
+import 'danger_zone_screen.dart';
 import 'non_work_days_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -127,6 +128,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
           trailing: const Icon(Icons.event_busy),
           onTap: () => Navigator.push(context, MaterialPageRoute(
             builder: (_) => NonWorkDaysScreen(repo: widget.state.nonWorkRepo)))),
+        const Divider(),
+        ListTile(
+          title: const Text('Delete all data',
+            style: TextStyle(color: Colors.redAccent)),
+          onTap: () => Navigator.push(context, MaterialPageRoute(
+            builder: (_) => DangerZoneScreen(state: widget.state)))),
       ]));
   }
 }
