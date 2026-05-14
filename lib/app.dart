@@ -1,9 +1,33 @@
 import 'package:flutter/material.dart';
+import 'screens/home_screen.dart';
+import 'state/app_state.dart';
 import 'theme/app_colors.dart';
 import 'theme/app_typography.dart';
 
-class PickTrackerApp extends StatelessWidget {
+class PickTrackerApp extends StatefulWidget {
   const PickTrackerApp({super.key});
+  @override
+  State<PickTrackerApp> createState() => _PickTrackerAppState();
+}
+
+class _PickTrackerAppState extends State<PickTrackerApp> {
+  final AppState _state = AppState();
+  bool _ready = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _state.init().then((_) async {
+      await _state.autoCloseStaleShifts();
+      if (mounted) setState(() => _ready = true);
+    });
+  }
+
+  @override
+  void dispose() {
+    _state.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,11 +38,14 @@ class PickTrackerApp extends StatelessWidget {
       theme: base.copyWith(
         scaffoldBackgroundColor: AppColors.surfaceBottom,
         colorScheme: base.colorScheme.copyWith(
-          primary: AppColors.accent, secondary: AppColors.accentLight,
-          surface: AppColors.cardBg, error: AppColors.danger),
-        textTheme: base.textTheme.copyWith(bodyMedium: AppTypography.body),
-      ),
-      home: const Scaffold(body: Center(child: Text('pick_tracker'))),
+          primary: AppColors.accent,
+          secondary: AppColors.accentLight,
+          surface: AppColors.cardBg,
+          error: AppColors.danger),
+        textTheme: base.textTheme.copyWith(bodyMedium: AppTypography.body)),
+      home: _ready
+          ? HomeScreen(state: _state)
+          : const Scaffold(body: Center(child: CircularProgressIndicator())),
     );
   }
 }
