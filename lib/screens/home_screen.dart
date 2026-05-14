@@ -90,7 +90,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     if (result == null) return;
     switch (result) {
       case 'end':
+        final shiftId = widget.state.activeShift?.id;
         await widget.state.endShift();
+        if (!mounted || shiftId == null) break;
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          duration: const Duration(seconds: 5),
+          content: const Text('Shift ended'),
+          action: SnackBarAction(
+            label: 'UNDO',
+            onPressed: () async {
+              await widget.state.reopenShift(shiftId);
+            })));
         break;
       case 'undo':
         await widget.state.undoLastOrder();
