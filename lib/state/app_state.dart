@@ -160,3 +160,65 @@ class AppState extends ChangeNotifier {
     await _refresh();
   }
 }
+
+class ShiftSummary {
+  final int totalCases, target, hours, minutes, orders, outlierCount, streak;
+  final double shiftRate, activeRate;
+  final int? bestCases, slowestCases, allTimeBest;
+  final double? bestRate, slowestRate;
+  final String? allTimeBestDate;
+  ShiftSummary({
+    required this.totalCases,
+    required this.target,
+    required this.hours,
+    required this.minutes,
+    required this.orders,
+    required this.shiftRate,
+    required this.activeRate,
+    required this.outlierCount,
+    required this.streak,
+    this.bestCases,
+    this.bestRate,
+    this.slowestCases,
+    this.slowestRate,
+    this.allTimeBest,
+    this.allTimeBestDate,
+  });
+}
+
+extension SummarizeExt on AppState {
+  Future<ShiftSummary?> summarizeShift(int shiftId) async {
+    final shift = await shiftsRepo.getById(shiftId);
+    if (shift == null || shift.endedAt == null) return null;
+    final os = await ordersRepo.findByShift(shiftId);
+    if (os.isEmpty) return null;
+    final total = os.fold<int>(0, (s, o) => s + o.cases);
+    final dur = shift.endedAt!.difference(shift.startedAt);
+    final rate = Calculations.shiftRate(total, shift.startedAt, shift.endedAt!);
+    final closed = os.where((o) => o.endedAt != null).toList();
+    final active = closed.where((o) => !o.isOutlier).toList();
+    final activeRate = Calculations.activeRate(active);
+    Order? best;
+    Order? slowest;
+    for (final o in closed) {
+      if (o.durationMs == null || o.durationMs == 0) continue;
+      final r = Calculations.orderRate(o);
+      if (best == null || r > Calculations.orderRate(best)) best = o;
+      if (slowest == null || r < Calculations.orderRate(slowest)) slowest = o;
+    }
+    return ShiftSummary(
+      totalCases: total,
+      target: shift.target,
+      hours: dur.inHours,
+      minutes: dur.inMinutes % 60,
+      orders: os.length,
+      shiftRate: rate,
+      activeRate: activeRate,
+      outlierCount: closed.where((o) => o.isOutlier).length,
+      streak: 0,
+      bestCases: best?.cases,
+      bestRate: best == null ? null : Calculations.orderRate(best),
+      slowestCases: slowest?.cases,
+      slowestRate: slowest == null ? null : Calculations.orderRate(slowest));
+  }
+}

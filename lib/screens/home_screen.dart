@@ -7,6 +7,7 @@ import '../widgets/active_order_card.dart';
 import '../widgets/keypad.dart';
 import '../widgets/stats_strip.dart';
 import '../widgets/target_chip.dart';
+import 'end_shift_summary.dart';
 
 class HomeScreen extends StatefulWidget {
   final AppState state;
@@ -101,6 +102,23 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             onPressed: () async {
               await widget.state.reopenShift(shiftId);
             })));
+        final summary = await widget.state.summarizeShift(shiftId);
+        if (!mounted || summary == null) break;
+        await Navigator.push(context, MaterialPageRoute(
+          builder: (_) => EndShiftSummary(
+            totalCases: summary.totalCases,
+            target: summary.target,
+            hours: summary.hours,
+            minutes: summary.minutes,
+            orders: summary.orders,
+            shiftRate: summary.shiftRate,
+            activeRate: summary.activeRate,
+            bestCases: summary.bestCases,
+            bestRate: summary.bestRate,
+            slowestCases: summary.slowestCases,
+            slowestRate: summary.slowestRate,
+            outlierCount: summary.outlierCount,
+            streak: summary.streak)));
         break;
       case 'undo':
         await widget.state.undoLastOrder();
