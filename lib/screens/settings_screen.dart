@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/exporter.dart';
 import '../state/app_state.dart';
+import 'about_screen.dart';
 import 'danger_zone_screen.dart';
 import 'non_work_days_screen.dart';
 
@@ -128,6 +129,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
           trailing: const Icon(Icons.event_busy),
           onTap: () => Navigator.push(context, MaterialPageRoute(
             builder: (_) => NonWorkDaysScreen(repo: widget.state.nonWorkRepo)))),
+        ListTile(
+          title: const Text('About'),
+          trailing: const Icon(Icons.info_outline),
+          onTap: () => Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const AboutScreen()))),
         const Divider(),
         ListTile(
           title: const Text('Delete all data',
