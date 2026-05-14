@@ -15,6 +15,7 @@ class _PickTrackerAppState extends State<PickTrackerApp> {
   final AppState _state = AppState();
   final GlobalKey<NavigatorState> _navKey = GlobalKey<NavigatorState>();
   bool _ready = false;
+  Object? _initError;
 
   @override
   void initState() {
@@ -24,6 +25,9 @@ class _PickTrackerAppState extends State<PickTrackerApp> {
       if (!mounted) return;
       setState(() => _ready = true);
       _maybeShowResumePrompt();
+    }).catchError((Object e, StackTrace s) {
+      if (!mounted) return;
+      setState(() => _initError = e);
     });
   }
 
