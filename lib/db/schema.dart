@@ -49,7 +49,17 @@ class Schema {
     'CREATE INDEX idx_shifts_date ON shifts(date)',
   ];
 
+  static const List<String> v2Statements = [
+    '''CREATE TABLE breaks (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      shift_id INTEGER NOT NULL REFERENCES shifts(id),
+      started_at TEXT NOT NULL,
+      ended_at TEXT
+    )''',
+    'CREATE INDEX idx_breaks_shift ON breaks(shift_id)',
+  ];
+
   static const String seedMeta =
-      "INSERT INTO meta (schema_version, created_at) VALUES (1, ?)";
+      "INSERT INTO meta (schema_version, created_at) VALUES (?, ?)";
   static const String seedSettings = "INSERT INTO settings (id) VALUES (1)";
 }

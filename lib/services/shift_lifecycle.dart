@@ -1,6 +1,8 @@
 import 'package:intl/intl.dart';
+import '../models/break_period.dart';
 import '../models/order.dart';
 import '../models/shift.dart';
+import '../repositories/break_repository.dart';
 import '../repositories/order_repository.dart';
 import '../repositories/settings_repository.dart';
 import '../repositories/shift_repository.dart';
@@ -17,7 +19,13 @@ class ShiftLifecycle {
   final ShiftRepository shifts;
   final OrderRepository orders;
   final SettingsRepository settings;
-  ShiftLifecycle({required this.shifts, required this.orders, required this.settings});
+  final BreakRepository breaks;
+  ShiftLifecycle({
+    required this.shifts,
+    required this.orders,
+    required this.settings,
+    required this.breaks,
+  });
 
   static String _ymd(DateTime d) =>
     DateFormat('yyyy-MM-dd').format(d.toLocal());
@@ -33,6 +41,12 @@ class ShiftLifecycle {
         startedAt: at, date: _ymd(at), target: s.defaultTarget, floor: s.defaultFloor));
       shift = await shifts.getById(id);
     } else {
+      // Auto-end a break if one is open — entering the next order
+      // implicitly resumes work.
+      final openBreak = await breaks.getActiveForShift(shift.id!);
+      if (openBreak != null) {
+        await breaks.close(openBreak.id!, at);
+      }
       final active = await orders.getActiveForShift(shift.id!);
       if (active != null) {
         final dur = at.difference(active.startedAt).inMilliseconds;
@@ -63,6 +77,10 @@ class ShiftLifecycle {
   Future<void> endShift({required DateTime at, String reason = 'user'}) async {
     final shift = await shifts.getActive();
     if (shift == null) return;
+    final openBreak = await breaks.getActiveForShift(shift.id!);
+    if (openBreak != null) {
+      await breaks.close(openBreak.id!, at);
+    }
     final active = await orders.getActiveForShift(shift.id!);
     if (active != null) {
       final dur = at.difference(active.startedAt).inMilliseconds;
@@ -85,6 +103,35 @@ class ShiftLifecycle {
       return 1;
     }
     return 0;
+  }
+
+  /// Starts a break for the active shift. Auto-closes any active order at
+  /// [at]. No-op if no active shift or a break is already open.
+  /// Returns the new break id, or null if no-op.
+  Future<int?> startBreak({required DateTime at}) async {
+    final shift = await shifts.getActive();
+    if (shift == null) return null;
+    final existing = await breaks.getActiveForShift(shift.id!);
+    if (existing != null) return null;
+    final active = await orders.getActiveForShift(shift.id!);
+    if (active != null) {
+      final dur = at.difference(active.startedAt).inMilliseconds;
+      final probe = Order(
+        id: active.id, shiftId: active.shiftId, seq: active.seq,
+        cases: active.cases, startedAt: active.startedAt, endedAt: at,
+        durationMs: dur, isOutlier: false, edited: false);
+      await orders.close(active.id!, at, dur, OutlierDetector.isOutlier(probe));
+    }
+    return breaks.insert(BreakPeriod(shiftId: shift.id!, startedAt: at));
+  }
+
+  /// Ends the currently open break for the active shift. No-op if none.
+  Future<void> endBreak({required DateTime at}) async {
+    final shift = await shifts.getActive();
+    if (shift == null) return;
+    final open = await breaks.getActiveForShift(shift.id!);
+    if (open == null) return;
+    await breaks.close(open.id!, at);
   }
 
   Future<void> undoLastOrder() async {

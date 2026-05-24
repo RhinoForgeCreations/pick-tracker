@@ -4,7 +4,7 @@ import 'schema.dart';
 class Migrations {
   const Migrations._();
 
-  static const int latestVersion = 1;
+  static const int latestVersion = 2;
 
   static Future<void> onConfigure(Database db) async {
     await db.execute('PRAGMA foreign_keys = ON');
@@ -18,7 +18,10 @@ class Migrations {
     for (final stmt in Schema.v1Statements) {
       batch.execute(stmt);
     }
-    batch.rawInsert(Schema.seedMeta, [DateTime.now().toUtc().toIso8601String()]);
+    for (final stmt in Schema.v2Statements) {
+      batch.execute(stmt);
+    }
+    batch.rawInsert(Schema.seedMeta, [latestVersion, DateTime.now().toUtc().toIso8601String()]);
     batch.rawInsert(Schema.seedSettings);
     await batch.commit(noResult: true);
   }
@@ -26,5 +29,13 @@ class Migrations {
   static Future<void> onUpgrade(Database db, int oldVersion, int newVersion) async {
     assert(newVersion <= latestVersion,
       'onUpgrade not implemented for v$newVersion — add migration before bumping latestVersion');
+    if (oldVersion < 2) {
+      final batch = db.batch();
+      for (final stmt in Schema.v2Statements) {
+        batch.execute(stmt);
+      }
+      batch.update('meta', {'schema_version': 2});
+      await batch.commit(noResult: true);
+    }
   }
 }

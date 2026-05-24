@@ -48,6 +48,22 @@ void main() {
   test('shift_rate returns 0 when end == start', () {
     expect(Calculations.shiftRate(50, base, base), 0.0);
   });
+  test('shift_rate subtracts breakMs from worked time', () {
+    final start = base.add(const Duration(minutes: 30));
+    final end = base.add(const Duration(minutes: 90)); // 60 min wall
+    // 92 cases / 30 min worked = 184/hr
+    final r = Calculations.shiftRate(92, start, end,
+      breakMs: 30 * 60 * 1000);
+    expect(r.round(), 184);
+  });
+  test('shift_rate returns 0 when break >= total time', () {
+    final start = base;
+    final end = base.add(const Duration(minutes: 30));
+    expect(Calculations.shiftRate(50, start, end,
+      breakMs: 30 * 60 * 1000), 0.0);
+    expect(Calculations.shiftRate(50, start, end,
+      breakMs: 99 * 60 * 1000), 0.0);
+  });
 
   test('percent_of_target', () {
     expect(Calculations.percentOfTarget(500, 1000), 50.0);
