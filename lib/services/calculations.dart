@@ -19,10 +19,11 @@ class Calculations {
     return totalCases / (totalMs / _msPerHour);
   }
 
-  static double shiftRate(int totalCases, DateTime start, DateTime end) {
-    final hours = end.difference(start).inMilliseconds / _msPerHour;
-    if (hours <= 0) return 0;
-    return totalCases / hours;
+  static double shiftRate(int totalCases, DateTime start, DateTime end,
+      {int breakMs = 0}) {
+    final workedMs = end.difference(start).inMilliseconds - breakMs;
+    if (workedMs <= 0) return 0;
+    return totalCases / (workedMs / _msPerHour);
   }
 
   static double percentOfTarget(int total, int target) {

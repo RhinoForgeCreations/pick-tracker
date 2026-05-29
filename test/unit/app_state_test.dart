@@ -10,7 +10,9 @@ void main() {
     final db = await AppDatabase.openForTest();
     final state = AppState.forTest(db);
     await state.init();
-    final t0 = DateTime.utc(2026, 5, 13, 19, 0);
+    // Use today's date so todayTotal matches when the test queries today's shifts.
+    final now = DateTime.now().toUtc();
+    final t0 = DateTime.utc(now.year, now.month, now.day, 9, 0);
     await state.submitNextAt(42, t0);
     expect(state.activeOrderCases, 42);
     expect(state.todayTotal, 0);

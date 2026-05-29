@@ -3,8 +3,10 @@ import 'package:intl/intl.dart';
 import 'package:sqflite/sqflite.dart';
 import '../db/database.dart';
 import '../models/app_settings.dart';
+import '../models/break_period.dart';
 import '../models/order.dart';
 import '../models/shift.dart';
+import '../repositories/break_repository.dart';
 import '../repositories/non_work_day_repository.dart';
 import '../repositories/order_repository.dart';
 import '../repositories/settings_repository.dart';
@@ -18,12 +20,15 @@ class AppState extends ChangeNotifier {
   late OrderRepository _orders;
   late SettingsRepository _settingsRepo;
   late NonWorkDayRepository _nonWork;
+  late BreakRepository _breaks;
   late ShiftLifecycle _lifecycle;
   bool _injected = false;
 
   AppSettings? settings;
   Shift? activeShift;
   Order? activeOrder;
+  BreakPeriod? activeBreak;
+  int closedBreakMs = 0;
   int todayTotal = 0;
 
   AppState();
@@ -32,6 +37,7 @@ class AppState extends ChangeNotifier {
   ShiftRepository get shiftsRepo => _shifts;
   OrderRepository get ordersRepo => _orders;
   NonWorkDayRepository get nonWorkRepo => _nonWork;
+  BreakRepository get breaksRepo => _breaks;
   Database get rawDb => _db!;
 
   Future<void> init() async {
@@ -40,8 +46,9 @@ class AppState extends ChangeNotifier {
     _orders = OrderRepository(_db!);
     _settingsRepo = SettingsRepository(_db!);
     _nonWork = NonWorkDayRepository(_db!);
+    _breaks = BreakRepository(_db!);
     _lifecycle = ShiftLifecycle(
-      shifts: _shifts, orders: _orders, settings: _settingsRepo);
+      shifts: _shifts, orders: _orders, settings: _settingsRepo, breaks: _breaks);
     await _refresh();
   }
 
@@ -52,6 +59,18 @@ class AppState extends ChangeNotifier {
     activeOrder = activeShift == null
       ? null
       : await _orders.getActiveForShift(activeShift!.id!);
+    if (activeShift == null) {
+      activeBreak = null;
+      closedBreakMs = 0;
+    } else {
+      activeBreak = await _breaks.getActiveForShift(activeShift!.id!);
+      final all = await _breaks.findByShift(activeShift!.id!);
+      var sum = 0;
+      for (final b in all) {
+        if (b.endedAt != null) sum += b.endedAt!.difference(b.startedAt).inMilliseconds;
+      }
+      closedBreakMs = sum;
+    }
     final today = DateFormat('yyyy-MM-dd').format(DateTime.now().toLocal());
     final dayShifts = await _shifts.findByDate(today);
     int total = 0;
@@ -64,6 +83,18 @@ class AppState extends ChangeNotifier {
     todayTotal = total;
     notifyListeners();
   }
+
+  /// Total break ms for the active shift right now, including the in-progress
+  /// break (if any) measured against [now].
+  int currentBreakMs(DateTime now) {
+    var ms = closedBreakMs;
+    if (activeBreak != null) {
+      ms += now.toUtc().difference(activeBreak!.startedAt).inMilliseconds;
+    }
+    return ms;
+  }
+
+  bool get onBreak => activeBreak != null;
 
   @override
   void dispose() {
@@ -86,6 +117,16 @@ class AppState extends ChangeNotifier {
 
   Future<void> endShift() async {
     await _lifecycle.endShift(at: DateTime.now().toUtc());
+    await _refresh();
+  }
+
+  Future<void> startBreak() async {
+    await _lifecycle.startBreak(at: DateTime.now().toUtc());
+    await _refresh();
+  }
+
+  Future<void> endBreak() async {
+    await _lifecycle.endBreak(at: DateTime.now().toUtc());
     await _refresh();
   }
 
@@ -151,6 +192,7 @@ class AppState extends ChangeNotifier {
 
   Future<void> wipeAllData() async {
     final db = _db!;
+    await db.delete('breaks');
     await db.delete('orders');
     await db.delete('shifts');
     await db.delete('non_work_days');
@@ -193,8 +235,12 @@ extension SummarizeExt on AppState {
     final os = await ordersRepo.findByShift(shiftId);
     if (os.isEmpty) return null;
     final total = os.fold<int>(0, (s, o) => s + o.cases);
-    final dur = shift.endedAt!.difference(shift.startedAt);
-    final rate = Calculations.shiftRate(total, shift.startedAt, shift.endedAt!);
+    final breakMs = await breaksRepo.totalDurationMs(shiftId, asOf: shift.endedAt!);
+    final workedMs =
+      shift.endedAt!.difference(shift.startedAt).inMilliseconds - breakMs;
+    final worked = Duration(milliseconds: workedMs.clamp(0, 1 << 62));
+    final rate = Calculations.shiftRate(
+      total, shift.startedAt, shift.endedAt!, breakMs: breakMs);
     final closed = os.where((o) => o.endedAt != null).toList();
     final active = closed.where((o) => !o.isOutlier).toList();
     final activeRate = Calculations.activeRate(active);
@@ -209,8 +255,8 @@ extension SummarizeExt on AppState {
     return ShiftSummary(
       totalCases: total,
       target: shift.target,
-      hours: dur.inHours,
-      minutes: dur.inMinutes % 60,
+      hours: worked.inHours,
+      minutes: worked.inMinutes % 60,
       orders: os.length,
       shiftRate: rate,
       activeRate: activeRate,

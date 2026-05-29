@@ -69,9 +69,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   Future<void> _openOverflow() async {
+    final onBreak = widget.state.onBreak;
     final result = await showModalBottomSheet<String>(
       context: context,
       builder: (_) => SafeArea(child: Wrap(children: [
+        ListTile(
+          leading: Icon(onBreak ? Icons.play_circle_outline : Icons.pause_circle_outline),
+          title: Text(onBreak ? 'End break' : 'Start break'),
+          enabled: widget.state.activeShift != null,
+          onTap: () => Navigator.pop(context, onBreak ? 'break_end' : 'break_start')),
         ListTile(
           leading: const Icon(Icons.stop_circle_outlined),
           title: const Text('End shift'),
@@ -93,6 +99,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       ])));
     if (result == null) return;
     switch (result) {
+      case 'break_start':
+        await widget.state.startBreak();
+        if (mounted) setState(() {});
+        break;
+      case 'break_end':
+        await widget.state.endBreak();
+        if (mounted) setState(() {});
+        break;
       case 'end':
         final shiftId = widget.state.activeShift?.id;
         await widget.state.endShift();
@@ -173,12 +187,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         final keep = state.settings!.keepScreenOn && state.activeShift != null;
         WakelockPlus.toggle(enable: keep);
         final shiftStart = state.activeShift?.startedAt.toLocal();
-        final shiftElapsed = shiftStart == null
-            ? Duration.zero
-            : DateTime.now().difference(shiftStart);
-        final shiftRate = (shiftStart == null || shiftElapsed.inSeconds == 0)
+        final now = DateTime.now();
+        final breakMs = state.currentBreakMs(now);
+        final totalMs = shiftStart == null
+            ? 0
+            : now.difference(shiftStart).inMilliseconds;
+        final workedMs = (totalMs - breakMs).clamp(0, totalMs);
+        final shiftElapsed = Duration(milliseconds: workedMs);
+        final shiftRate = workedMs == 0
             ? 0.0
-            : (state.todayTotal / (shiftElapsed.inSeconds / 3600))
+            : (state.todayTotal / (workedMs / 3600000))
                 .clamp(0, 9999)
                 .toDouble();
         return Container(
@@ -208,10 +226,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               const SizedBox(height: 4),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: ActiveOrderCard(
-                  cases: state.activeOrder?.cases,
-                  startedAt: state.activeOrder?.startedAt,
-                  active: state.activeOrder != null)),
+                child: state.onBreak
+                  ? _OnBreakCard(startedAt: state.activeBreak!.startedAt)
+                  : ActiveOrderCard(
+                      cases: state.activeOrder?.cases,
+                      startedAt: state.activeOrder?.startedAt,
+                      active: state.activeOrder != null)),
               const SizedBox(height: 12),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -240,5 +260,41 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           ),
         );
       });
+  }
+}
+
+class _OnBreakCard extends StatelessWidget {
+  final DateTime startedAt;
+  const _OnBreakCard({required this.startedAt});
+
+  String _elapsed() {
+    final d = DateTime.now().difference(startedAt.toLocal());
+    final h = d.inHours;
+    final m = d.inMinutes % 60;
+    final s = d.inSeconds % 60;
+    if (h > 0) return '${h}h ${m}m';
+    if (m > 0) return '${m}m ${s.toString().padLeft(2, '0')}s';
+    return '${s}s';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.cardBg,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.textSecondary.withOpacity(0.4))),
+      child: Row(children: [
+        const Icon(Icons.pause_circle_filled, color: AppColors.textSecondary, size: 28),
+        const SizedBox(width: 12),
+        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('On break', style: AppTypography.statValue),
+            Text(_elapsed(), style: AppTypography.statLabel),
+          ])),
+        Text('Tap a number to resume', style: AppTypography.statLabel),
+      ]),
+    );
   }
 }
