@@ -4,6 +4,7 @@
         <title>Pick Tracker Appcast</title>
         <item>
             <title>Version 0.3.0</title>
+            <link>https://github.com/RhinoForgeCreations/pick-tracker/releases/latest</link>
             <sparkle:releaseNotesLink>
                 https://github.com/RhinoForgeCreations/pick-tracker/releases/tag/v0.3.0
             </sparkle:releaseNotesLink>
