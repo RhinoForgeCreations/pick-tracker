@@ -67,7 +67,6 @@ class _PickTrackerAppState extends State<PickTrackerApp> {
     final base = ThemeData.dark(useMaterial3: true);
     
     final appcastURL = 'https://raw.githubusercontent.com/RhinoForgeCreations/pick-tracker/main/appcast.xml';
-    final appcastConfig = AppcastConfiguration(url: appcastURL, supportedOS: ['android']);
 
     return MaterialApp(
       title: 'Pick Tracker',
@@ -88,7 +87,11 @@ class _PickTrackerAppState extends State<PickTrackerApp> {
                 style: const TextStyle(color: AppColors.danger)))))
           : _ready
               ? UpgradeAlert(
-                  upgrader: Upgrader(appcastConfig: appcastConfig),
+                  upgrader: Upgrader(
+                    storeController: UpgraderStoreController(
+                      onAndroid: () => UpgraderAppcastStore(appcastURL: appcastURL),
+                    ),
+                  ),
                   child: HomeScreen(state: _state),
                 )
               : const Scaffold(body: Center(child: CircularProgressIndicator())),
