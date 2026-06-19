@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:upgrader/upgrader.dart';
 import 'screens/home_screen.dart';
 import 'screens/resume_prompt.dart';
 import 'state/app_state.dart';
@@ -64,6 +65,10 @@ class _PickTrackerAppState extends State<PickTrackerApp> {
   @override
   Widget build(BuildContext context) {
     final base = ThemeData.dark(useMaterial3: true);
+    
+    final appcastURL = 'https://raw.githubusercontent.com/RhinoForgeCreations/pick-tracker/main/appcast.xml';
+    final appcastConfig = AppcastConfiguration(url: appcastURL, supportedOS: ['android']);
+
     return MaterialApp(
       title: 'Pick Tracker',
       navigatorKey: _navKey,
@@ -82,7 +87,10 @@ class _PickTrackerAppState extends State<PickTrackerApp> {
               child: Text('Init failed: $_initError',
                 style: const TextStyle(color: AppColors.danger)))))
           : _ready
-              ? HomeScreen(state: _state)
+              ? UpgradeAlert(
+                  upgrader: Upgrader(appcastConfig: appcastConfig),
+                  child: HomeScreen(state: _state),
+                )
               : const Scaffold(body: Center(child: CircularProgressIndicator())),
     );
   }

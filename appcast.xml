@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+    <channel>
+        <title>Pick Tracker Appcast</title>
+        <item>
+            <title>Version 0.3.0</title>
+            <sparkle:releaseNotesLink>
+                https://github.com/RhinoForgeCreations/pick-tracker/releases/tag/v0.3.0
+            </sparkle:releaseNotesLink>
+            <pubDate>Mon, 19 Jun 2026 12:00:00 +1000</pubDate>
+            <enclosure url="https://github.com/RhinoForgeCreations/pick-tracker/releases/download/v0.3.0/app-release.apk"
+                       sparkle:version="3"
+                       sparkle:shortVersionString="0.3.0"
+                       sparkle:os="android" />
+        </item>
+    </channel>
+</rss>
