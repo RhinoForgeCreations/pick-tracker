@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:upgrader/upgrader.dart';
 import 'screens/home_screen.dart';
 import 'screens/resume_prompt.dart';
+import 'screens/splash_screen.dart';
 import 'state/app_state.dart';
 import 'theme/app_colors.dart';
 import 'theme/app_typography.dart';
@@ -16,6 +17,8 @@ class _PickTrackerAppState extends State<PickTrackerApp> {
   final AppState _state = AppState();
   final GlobalKey<NavigatorState> _navKey = GlobalKey<NavigatorState>();
   bool _ready = false;
+  bool _splashDone = false;
+  bool _resumeChecked = false;
   Object? _initError;
 
   @override
@@ -25,11 +28,25 @@ class _PickTrackerAppState extends State<PickTrackerApp> {
       await _state.autoCloseStaleShifts();
       if (!mounted) return;
       setState(() => _ready = true);
-      _maybeShowResumePrompt();
+      _maybeEnterApp();
     }).catchError((Object e, StackTrace s) {
       if (!mounted) return;
       setState(() => _initError = e);
     });
+  }
+
+  void _onSplashComplete() {
+    if (!mounted) return;
+    setState(() => _splashDone = true);
+    _maybeEnterApp();
+  }
+
+  // Once the DB is ready AND the splash has played, surface the home screen
+  // and (once) check whether a stale shift should prompt to resume.
+  void _maybeEnterApp() {
+    if (!_ready || !_splashDone || _resumeChecked) return;
+    _resumeChecked = true;
+    _maybeShowResumePrompt();
   }
 
   void _maybeShowResumePrompt() {
@@ -85,7 +102,7 @@ class _PickTrackerAppState extends State<PickTrackerApp> {
               padding: const EdgeInsets.all(24),
               child: Text('Init failed: $_initError',
                 style: const TextStyle(color: AppColors.danger)))))
-          : _ready
+          : (_ready && _splashDone)
               ? UpgradeAlert(
                   upgrader: Upgrader(
                     storeController: UpgraderStoreController(
@@ -94,7 +111,7 @@ class _PickTrackerAppState extends State<PickTrackerApp> {
                   ),
                   child: HomeScreen(state: _state),
                 )
-              : const Scaffold(body: Center(child: CircularProgressIndicator())),
+              : SplashScreen(onComplete: _onSplashComplete),
     );
   }
 }
