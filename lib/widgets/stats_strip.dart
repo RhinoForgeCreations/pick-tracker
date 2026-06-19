@@ -17,6 +17,19 @@ class StatsStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final pct = target == 0 ? 0.0 : todayTotal / target;
+    
+    final requiredRate = target / 7.5;
+    Color rateColor = AppColors.textPrimary;
+    if (target > 0 && shiftRate > 0) {
+      if (shiftRate >= requiredRate) {
+        rateColor = Colors.greenAccent;
+      } else if (shiftRate >= requiredRate * 0.9) {
+        rateColor = Colors.orangeAccent;
+      } else {
+        rateColor = Colors.redAccent;
+      }
+    }
+
     return Padding(padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
@@ -29,7 +42,8 @@ class StatsStrip extends StatelessWidget {
         Row(children: [
           Expanded(child: Row(children: [
             Text('Shift rate ', style: AppTypography.statLabel),
-            Text('${shiftRate.round()}/hr', style: AppTypography.statValue),
+            Text('${shiftRate.round()}/hr', 
+              style: AppTypography.statValue.copyWith(color: rateColor)),
           ])),
           Text('Shift ${_hm(shiftElapsed)}', style: AppTypography.statLabel),
         ]),
