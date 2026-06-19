@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 import '../theme/app_motion.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 class ActiveOrderCard extends StatefulWidget {
   final int? cases;
@@ -54,6 +55,6 @@ class _ActiveOrderCardState extends State<ActiveOrderCard>
               style: AppTypography.statLabel),
           ])),
       ]),
-    );
+    ).animate(key: ValueKey(widget.startedAt)).fadeIn(duration: 250.ms).slideX(begin: 0.05, curve: Curves.easeOut);
   }
 }

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import '../state/app_state.dart';
 import '../theme/app_colors.dart';
@@ -245,7 +246,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   color: AppColors.cardBg,
                   borderRadius: BorderRadius.circular(12)),
                 child: Text(_input.isEmpty ? '0' : _input,
-                  style: AppTypography.bigCount)),
+                  style: AppTypography.bigCount)
+                    .animate(key: ValueKey(_input))
+                    .scaleXY(begin: 0.95, end: 1.0, duration: 100.ms, curve: Curves.easeOut)),
               const SizedBox(height: 8),
               Expanded(
                 child: Padding(

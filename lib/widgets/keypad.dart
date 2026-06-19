@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 class Keypad extends StatefulWidget {
   final String value;
@@ -79,7 +80,7 @@ class _KeypadState extends State<Keypad> {
         _KBtn(label: 'NEXT', semantic: 'Submit order',
           onTap: canSubmit ? _next : null, filled: canSubmit),
       ]),
-    ]);
+    ].animate(interval: 40.ms).fadeIn(duration: 250.ms).slideY(begin: 0.2, curve: Curves.easeOut));
   }
 }
 
