@@ -9,7 +9,7 @@
             </sparkle:releaseNotesLink>
             <pubDate>Mon, 19 Jun 2026 12:00:00 +1000</pubDate>
             <enclosure url="https://github.com/RhinoForgeCreations/pick-tracker/releases/download/v0.3.0/app-debug.apk"
-                       sparkle:version="3"
+                       sparkle:version="0.3.0"
                        sparkle:shortVersionString="0.3.0"
                        sparkle:os="android" />
         </item>
